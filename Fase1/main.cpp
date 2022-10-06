@@ -6,21 +6,24 @@ using namespace std;
 struct Tienda {
     int id;
     int distancia;
-    int pedidos[4];
+    int pedidosTienda[4];
 };
 
 struct Camion {
     int id;
     string tipoCarga;
-    Tienda ruta[5];
+    bool Ruta[5];
     long carga;
     int TiempoCarga;
     int TiempoRuta;
 };
 
+void creacionTienda(Tienda t){
+
+}
 
 
-void *creacionTienda(void * args){
+void *asignacionTienda(void * args){
 
 }
 
