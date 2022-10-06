@@ -18,7 +18,29 @@ struct Camion {
     int TiempoRuta;
 };
 
+
+
+void *creacionTienda(void * args){
+
+}
+
+void *CargaDescarga(void * args){
+
+}
+
+void *RutaCamion(void * args){
+
+}
+
+
+
 int main() {
+    Tienda T[5];
+    Camion C[4];
+
+
+
+
     cout << "Simulacion de Entrega" << endl;
 
 
