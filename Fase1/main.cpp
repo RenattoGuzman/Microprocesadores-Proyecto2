@@ -18,13 +18,10 @@ struct Camion {
     int TiempoRuta;
 };
 
-int KmH;
-int Tcarga;
-int Tdescarga;
-
 void creacionTienda(Tienda t){
 
 }
+
 
 void *asignacionTienda(void * args){
 
@@ -44,14 +41,10 @@ int main() {
     Tienda T[5];
     Camion C[4];
 
-    cout << "Simulacion de Entrega" << endl;
 
-    cout << "\nIngrese la velocidad promedio de los camiones: " << endl;
-    cin >> KmH;
-    cout << "\nIngrese la velodidad de carga: " << endl;
-    cin >> Tcarga;
-    cout << "\nIngrese la velocidad de descarga: " << endl;
-    cin >> Tdescarga;
+
+
+    cout << "Simulacion de Entrega" << endl;
 
 
 
