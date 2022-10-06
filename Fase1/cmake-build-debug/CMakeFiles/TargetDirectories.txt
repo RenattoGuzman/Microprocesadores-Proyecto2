@@ -1,0 +1,3 @@
+C:/Users/rentt/OneDrive/Documentos/GitHub/Microprocesadores-Proyecto2/Fase1/cmake-build-debug/CMakeFiles/Fase1.dir
+C:/Users/rentt/OneDrive/Documentos/GitHub/Microprocesadores-Proyecto2/Fase1/cmake-build-debug/CMakeFiles/edit_cache.dir
+C:/Users/rentt/OneDrive/Documentos/GitHub/Microprocesadores-Proyecto2/Fase1/cmake-build-debug/CMakeFiles/rebuild_cache.dir
