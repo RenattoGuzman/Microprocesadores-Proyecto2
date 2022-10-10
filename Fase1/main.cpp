@@ -1,6 +1,7 @@
 #include <iostream>
 #include <pthread.h>
 #include <random>
+#include "unistd.h"
 
 using namespace std;
 
@@ -48,8 +49,10 @@ Tienda creacionTienda(int id){
 }
 void asignarRuta(int id,Tienda t){
     for(int i =0;i<4;i++){
-        if(t.pedidosTienda[i] != 0)
+        if(t.pedidosTienda[i] != 0){
             C[i].Ruta[id] = true;
+            C[i].carga += t.pedidosTienda[i];
+        }
     }
 }
 
@@ -61,6 +64,20 @@ void *asignacionTienda(void * args){
 }
 
 void *CargaDescarga(void * args){
+    Camion * Camion;
+    Camion =(Camion *) args;
+    for(int i = 0; i <= Camion->carga;i++){
+        sleep(Tcarga);
+    }
+
+
+    for(int i = 0; i <= T.size();i++){
+        for(int j = 0; i <= T[i].pedidosTienda[Camion->id];j++){
+            sleep(Tdescarga);
+        }
+    }
+
+
 
     cout << "Carga Descarga"<< endl;
 
@@ -103,8 +120,8 @@ int main() {
     pthread_t hilo;
 
     pthread_create(&hilo, NULL,asignacionTienda,NULL);
-    //pthread_create(&hilo, NULL,CargaDescarga,&C[0]);
-    //pthread_create(&hilo, NULL,RutaCamion,&C[0]);
+    pthread_create(&hilo, NULL,CargaDescarga,&C[0]);
+    pthread_create(&hilo, NULL,RutaCamion,&C[0]);
 
     pthread_join(hilo,NULL);
 
