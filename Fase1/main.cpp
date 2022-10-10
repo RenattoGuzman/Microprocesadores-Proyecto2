@@ -43,8 +43,6 @@ Tienda creacionTienda(int id){
         else
             arr.push_back(num);
     }
-
-
     T[id] = {id+1,25*(id+1),arr};
     return T[id];
 }
@@ -74,8 +72,6 @@ void *RutaCamion(void * args){
 
 }
 
-
-
 int main() {
     cout << "Simulacion de Entrega" << endl;
 
@@ -89,6 +85,8 @@ int main() {
     cin >> Tcarga;
     cout << "\nIngrese la velocidad de descarga: " << endl;
     cin >> Tdescarga;
+
+    cout <<"------------------------------------------------------------------- " <<endl;
 
     vector<bool> ruta0;
     T = vector<Tienda> (cantTiendas);
@@ -110,18 +108,26 @@ int main() {
 
     pthread_join(hilo,NULL);
 
-    cout<<"Id: "<< T[0].id<<endl;
-    cout<<"Distancia: "<< T[0].distancia<<endl;
+    cout <<"------------------------------------------------------------------- " <<endl;
+
+    cout<<"Tienda: "<< T[0].id<<endl;
+    cout<<"Distancia: "<< T[0].distancia<<" km de la fabrica"<<endl;
     cout<<"Pedidos: "<<endl;
     for (int i = 0; i<4;i++)
-        cout <<"Camion " <<i <<" pedido: "<< T[0].pedidosTienda[i]<<endl;
+        cout <<"Se realizo un pedido al Camion " <<i+1 <<" de: "<< T[0].pedidosTienda[i]<<endl;
 
-    for(int i = 0; i<cantTiendas;i++){
-        if(C[0].Ruta[i])
-            cout <<"Tienda "<<i<<" tiene un pedido "<< endl;
+    cout <<"------------------------------------------------------------------- " <<endl;
+
+    cout <<"Pedidos a cada camion por Tienda 1" <<endl;
+
+    for (int j =0; j<4;j++){
+        if(C[j].Ruta[0])
+            cout <<"Tienda 1 tiene un pedido para camion "<< j+1<< endl;
         else
-            cout <<"Tienda "<<i<<" NO tiene un pedido "<< endl;
+            cout <<"Tienda 1 NO tiene un pedido para camion "<< j+1 << endl;
     }
+
+    cout <<"------------------------------------------------------------------- " <<endl;
 
     return 0;
 }
