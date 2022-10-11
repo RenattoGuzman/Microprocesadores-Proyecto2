@@ -74,14 +74,14 @@ void *CargaDescarga(void * args){
         camion->carga += Tcarga;
         camion->TiempoCarga++;
         //cout<<"Se han cargado "<<Tcarga<<" en Camion "<<camion->id<<", faltan "<< (camion->cargatotal)-(camion->carga)<< endl;
-        printf("Se han cargado %d en Camion %d, faltan %ld \n",Tcarga,camion->id,(camion->cargatotal)-(camion->carga));
+        printf("Se han cargado %d paquetes en Camion %d, faltan %ld \n",Tcarga,camion->id,(camion->cargatotal)-(camion->carga));
         sleep(1);
     }
     if(contC2>0){
         camion->carga += contC2;
         camion->TiempoCarga++;
         //cout<<"Se han cargado "<<contC2<<" en Camion "<<camion->id<<", faltan "<< (camion->cargatotal)-(camion->carga)<< endl;
-        printf("Se han cargado %d en Camion %d, faltan %ld \n",contC2,camion->id,(camion->cargatotal)-(camion->carga));
+        printf("Se han cargado %d paquetes en Camion %d, faltan %ld \n",contC2,camion->id,(camion->cargatotal)-(camion->carga));
         sleep(1);
     }
     cout<<"Camion "<<camion->id<<", faltan ha terminado de ser cargado" << endl;
@@ -107,7 +107,7 @@ void *CargaDescarga(void * args){
                 camion->TiempoCarga++;
                 T[i].pedidosTienda[(camion->id)-1] -= Tdescarga;
                 //cout<<"Se han descargado "<<Tdescarga<<" de Camion "<<camion->id<<" en Tienda"<<i+1 <<", faltan "<< T[i].pedidosTienda[(camion->id)-1]<< endl;
-                printf("Se han descargado %d de Camion %d en Tienda %d, faltan %d \n",Tdescarga,camion->id,i+1,T[i].pedidosTienda[(camion->id)-1]);
+                printf("Se han descargado %d paquetes de Camion %d en Tienda %d, faltan %d \n",Tdescarga,camion->id,i+1,T[i].pedidosTienda[(camion->id)-1]);
                 sleep(1);
             }
             if(contD2>0){
@@ -115,7 +115,7 @@ void *CargaDescarga(void * args){
                 camion->TiempoCarga++;
                 T[i].pedidosTienda[(camion->id)-1] -= contD2;
                 //cout<<"Se han descargado "<<contD2<<" en Camion "<<camion->id<<" en Tienda"<<i+1 <<", faltan "<< T[i].pedidosTienda[(camion->id)-1]<< endl;
-                printf("Se han descargado %d de Camion %d en Tienda %d, faltan %d \n",contD2,camion->id,i+1,T[i].pedidosTienda[(camion->id)-1]);
+                printf("Se han descargado %d paquetes de Camion %d en Tienda %d, faltan %d \n",contD2,camion->id,i+1,T[i].pedidosTienda[(camion->id)-1]);
                 sleep(1);
             }
             cout<<"Camion "<<camion->id<<", ha terminado de descargar en Tienda "<<i+1 << endl;
@@ -144,7 +144,7 @@ void *RutaCamion(void * args){
             }
             if(contC2>0){
                 camion->carga += contC2;
-                camion->TiempoCarga++;
+                camion->TiempoRuta++;
                 //cout<<"Camion "<<camion->id<<" ha viajado " <<(contC*KmH)+contC2<<" hacia Tienda "<< i+1 << endl;
                 printf("Camion %d ha viajado %d hacia Tienda %d \n",camion->id,(contC*KmH)+contC2*KmH,i+1 );
                 sleep(1);
@@ -187,7 +187,6 @@ int main() {
     C.push_back({3,"Fizzy Lifting Drink",ruta0, true,0,0,0,0});
     C.push_back({4,"Everlasting Gobstopper",ruta0,true,0,0,0,0});
 
-
     pthread_t hilo;
 
     pthread_create(&hilo, NULL,asignacionTienda,NULL);
@@ -215,18 +214,16 @@ int main() {
 
     cout <<"------------------------------------------------------------------- " <<endl;
 
-
     pthread_create(&hilo, NULL,CargaDescarga,&C[0]);
     pthread_create(&hilo, NULL,RutaCamion,&C[0]);
 
     pthread_join(hilo,NULL);
 
-
     cout <<"------------------------------------------------------------------- " <<endl;
     cout<<"El Camion 1 tuvo un tiempo de carga de "<< C[0].TiempoCarga<<endl;
     cout<<"El Camion 1 tuvo un tiempo en ruta de "<< C[0].TiempoRuta<<endl;
     cout<<"El Camion 1 tuvo un tiempo total de "<< C[0].TiempoCarga+C[0].TiempoCarga<<endl;
-
+    cout<<"El Camion 1 tuvo una carga total de "<< C[0].cargatotal<<endl;
 
     return 0;
 }
