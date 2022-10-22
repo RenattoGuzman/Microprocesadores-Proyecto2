@@ -5,6 +5,8 @@
 
 using namespace std;
 
+//TODO Encabezado
+
 //Estructura de Tienda
 struct Tienda {
     int id;
@@ -97,7 +99,7 @@ void *CargaDescarga(void * args){
         printf("Se han cargado %d paquetes en Camion %d, faltan %ld \n",contC2,camion->id,(camion->cargatotal)-(camion->carga));
         sleep(1);
     }
-    cout<<"Camion "<<camion->id<<", faltan ha terminado de ser cargado" << endl;
+    cout<<"Camion "<<camion->id<<", faltan ha terminado de ser cargado" << endl; //TODO Pasar cout a printf
     camion->enTienda = false;
 
     //Descarga
@@ -138,7 +140,7 @@ void *CargaDescarga(void * args){
                 printf("Se han descargado %d paquetes de Camion %d en Tienda %d, faltan %d \n",contD2,camion->id,i+1,T[i].pedidosTienda[(camion->id)-1]);
                 sleep(1);
             }
-            cout<<"Camion "<<camion->id<<", ha terminado de descargar en Tienda "<<i+1 << endl;
+            cout<<"Camion "<<camion->id<<", ha terminado de descargar en Tienda "<<i+1 << endl; //TODO Pasar cout a printf
             camion->enTienda = false;
 
             pthread_mutex_unlock(&mutexes[i]);
@@ -243,6 +245,9 @@ int main() {
     for(int i =0;i<4;i++){
         pthread_join(hilosss[i],NULL);
     }
+    for(int i =0;i<cantTiendas;i++){
+        pthread_mutex_destroy(&mutexes[i]);
+    }
 
 
 
@@ -258,6 +263,9 @@ int main() {
     cout<<"El Camion 4 tuvo un tiempo en ruta de "<< C[3].TiempoRuta<< " horas"<<endl;
     cout<<"El Camion 4 tuvo un tiempo total de "<< C[3].TiempoCarga+C[2].TiempoRuta<< " horas"<<endl;
     //cout<<"El Camion 1 tuvo una carga total de "<< C[0].cargatotal << " paquetes"<<endl;
+
+    //TODO
+    // Hacer Prints con informacion de cada Camion y de cada Tienda
 
     return 0;
 }
