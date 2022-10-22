@@ -5,12 +5,15 @@
 
 using namespace std;
 
+//Estructura de Tienda
 struct Tienda {
     int id;
     int distancia;
     vector<int> pedidosTienda;
+    float tiempoEnDescarga;
 };
 
+//Estructura de Camion
 struct Camion {
     int id;
     string tipoCarga;
@@ -23,15 +26,19 @@ struct Camion {
     float TiempoRuta;
 };
 
-
+//Vectores que almacenan estructuras de datos
 vector<Camion> C;
 vector<Tienda> T;
 
-
+//Variables Globales
 int KmH;
 int Tcarga;
 int Tdescarga;
 int hId=0;
+
+//Variables tipo pthread
+pthread_barrier_t barrier;
+vector<pthread_mutex_t> mutexes;
 
 
 
@@ -62,6 +69,11 @@ void asignarRuta(int id,Tienda t){
 void *asignacionTienda(void * args){
     int id = hId++;
     asignarRuta(id,creacionTienda(id));
+
+    pthread_barrier_wait(&barrier);
+    sleep(1);
+
+    printf("Tienda %d ha asignado:\n \t %d paquetes a Camion 1 \n \t %d paquetes a Camion 2 \n \t %d paquetes a Camion 3 \n \t %d paquetes a Camion 4  \n",id+1,T[id].pedidosTienda[0],T[id].pedidosTienda[1],T[id].pedidosTienda[2],T[id].pedidosTienda[3]);
 }
 
 void *CargaDescarga(void * args){
@@ -103,9 +115,15 @@ void *CargaDescarga(void * args){
                 i++;
             }
 
+            pthread_mutex_lock(&mutexes[i]);
+
+            camion->TiempoRuta+= T[i].tiempoEnDescarga;
+            T[i].tiempoEnDescarga = 0;
+
             for(int j =0;j<contD;j++){
                 camion->carga -= Tdescarga;
                 camion->TiempoCarga++;
+                T[i].tiempoEnDescarga++;
                 T[i].pedidosTienda[(camion->id)-1] -= Tdescarga;
                 //cout<<"Se han descargado "<<Tdescarga<<" de Camion "<<camion->id<<" en Tienda"<<i+1 <<", faltan "<< T[i].pedidosTienda[(camion->id)-1]<< endl;
                 printf("Se han descargado %d paquetes de Camion %d en Tienda %d, faltan %d \n",Tdescarga,camion->id,i+1,T[i].pedidosTienda[(camion->id)-1]);
@@ -114,6 +132,7 @@ void *CargaDescarga(void * args){
             if(contD2>0){
                 camion->carga -= contD2;
                 camion->TiempoCarga += ((float) contD2/Tcarga);
+                T[i].tiempoEnDescarga += ((float) contD2/Tcarga);
                 T[i].pedidosTienda[(camion->id)-1] -= contD2;
                 //cout<<"Se han descargado "<<contD2<<" en Camion "<<camion->id<<" en Tienda"<<i+1 <<", faltan "<< T[i].pedidosTienda[(camion->id)-1]<< endl;
                 printf("Se han descargado %d paquetes de Camion %d en Tienda %d, faltan %d \n",contD2,camion->id,i+1,T[i].pedidosTienda[(camion->id)-1]);
@@ -121,6 +140,10 @@ void *CargaDescarga(void * args){
             }
             cout<<"Camion "<<camion->id<<", ha terminado de descargar en Tienda "<<i+1 << endl;
             camion->enTienda = false;
+
+            pthread_mutex_unlock(&mutexes[i]);
+
+            i++;
         } else
             sleep(1);
     }
@@ -184,6 +207,7 @@ int main() {
 
     vector<bool> ruta0;
     T = vector<Tienda> (cantTiendas);
+    mutexes = vector<pthread_mutex_t> (cantTiendas);
     for(int i = 0; i<cantTiendas;i++){
         ruta0.push_back(false);
     }
@@ -193,43 +217,47 @@ int main() {
     C.push_back({3,"Fizzy Lifting Drink",ruta0, true,0,0,0,0});
     C.push_back({4,"Everlasting Gobstopper",ruta0,true,0,0,0,0});
 
-    pthread_t hilo;
+    pthread_t hilos[cantTiendas];
 
-    pthread_create(&hilo, NULL,asignacionTienda,NULL);
-
-    pthread_join(hilo,NULL);
-
-    cout <<"------------------------------------------------------------------- " <<endl;
-
-    cout<<"Tienda: "<< T[0].id<<endl;
-    cout<<"Distancia: "<< T[0].distancia<<" km de la fabrica"<<endl;
-    cout<<"Pedidos: "<<endl;
-    for (int i = 0; i<4;i++)
-        cout <<"Se realizo un pedido al Camion " <<i+1 <<" de: "<< T[0].pedidosTienda[i]<<endl;
-
-    cout <<"------------------------------------------------------------------- " <<endl;
-
-    cout <<"Pedidos a cada camion por Tienda 1" <<endl;
-
-    for (int j =0; j<4;j++){
-        if(C[j].Ruta[0])
-            cout <<"Tienda 1 tiene un pedido para camion "<< j+1<< endl;
-        else
-            cout <<"Tienda 1 NO tiene un pedido para camion "<< j+1 << endl;
+    pthread_barrier_init(&barrier,NULL,cantTiendas);
+    for(int i =0;i<cantTiendas;i++){
+        pthread_mutex_init(&mutexes[i], NULL);
+        pthread_create(&hilos[i], NULL,asignacionTienda,NULL);
     }
 
+    for(int i =0;i<cantTiendas;i++){
+        pthread_join(hilos[i],NULL);
+    }
+    pthread_barrier_destroy(&barrier);
+
+    pthread_t hilosss[4];
+
+    for(int i =0;i<4;i++){
+        pthread_create(&hilosss[i], NULL,CargaDescarga,&C[i]);
+        pthread_create(&hilosss[i], NULL,RutaCamion,&C[i]);
+    }
+
+
+
+
+    for(int i =0;i<4;i++){
+        pthread_join(hilosss[i],NULL);
+    }
+
+
+
+
     cout <<"------------------------------------------------------------------- " <<endl;
-
-    pthread_create(&hilo, NULL,CargaDescarga,&C[0]);
-    pthread_create(&hilo, NULL,RutaCamion,&C[0]);
-
-    pthread_join(hilo,NULL);
-
-    cout <<"------------------------------------------------------------------- " <<endl;
-    cout<<"El Camion 1 tuvo un tiempo de carga de "<< C[0].TiempoCarga<< " horas"<<endl;
+    //cout<<"El Camion 1 tuvo un tiempo de carga y descarga de "<< C[0].TiempoCarga<< " horas"<<endl;
     cout<<"El Camion 1 tuvo un tiempo en ruta de "<< C[0].TiempoRuta<< " horas"<<endl;
     cout<<"El Camion 1 tuvo un tiempo total de "<< C[0].TiempoCarga+C[0].TiempoRuta<< " horas"<<endl;
-    cout<<"El Camion 1 tuvo una carga total de "<< C[0].cargatotal << " paquetes"<<endl;
+    cout<<"El Camion 2 tuvo un tiempo en ruta de "<< C[1].TiempoRuta<< " horas"<<endl;
+    cout<<"El Camion 2 tuvo un tiempo total de "<< C[1].TiempoCarga+C[1].TiempoRuta<< " horas"<<endl;
+    cout<<"El Camion 3 tuvo un tiempo en ruta de "<< C[2].TiempoRuta<< " horas"<<endl;
+    cout<<"El Camion 3 tuvo un tiempo total de "<< C[2].TiempoCarga+C[2].TiempoRuta<< " horas"<<endl;
+    cout<<"El Camion 4 tuvo un tiempo en ruta de "<< C[3].TiempoRuta<< " horas"<<endl;
+    cout<<"El Camion 4 tuvo un tiempo total de "<< C[3].TiempoCarga+C[2].TiempoRuta<< " horas"<<endl;
+    //cout<<"El Camion 1 tuvo una carga total de "<< C[0].cargatotal << " paquetes"<<endl;
 
     return 0;
 }
