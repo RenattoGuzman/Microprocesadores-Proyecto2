@@ -134,19 +134,23 @@ void *RutaCamion(void * args){
     }
     for(int i=0;i<camion->Ruta.size();i++){
         if(camion->Ruta[i]){
-            int contC = (T[i].distancia-((camion->TiempoRuta)*KmH))/KmH;
+            int contC;
+            if(i==0)
+                contC = (T[i].distancia)/KmH;
+            else
+                contC = (T[i].distancia - T[i-1].distancia)/KmH;
             int contC2 = (T[i].distancia-((camion->TiempoRuta)*KmH))%KmH;
             for(int j = 0;j<contC;j++){
                 camion->TiempoRuta++;
                 //cout<<"Camion "<<camion->id<<" ha viajado " <<(j+1)*KmH<<" hacia Tienda "<< i+1 << endl;
-                printf("Camion %d ha viajado %d hacia Tienda %d \n",camion->id,(j+1)*KmH,i+1 );
+                printf("Camion %d ha viajado %d hacia Tienda %d \n",camion->id,(camion->TiempoRuta)*KmH,i+1 );
                 sleep(1);
             }
             if(contC2>0){
                 camion->carga += contC2;
                 camion->TiempoRuta++;
                 //cout<<"Camion "<<camion->id<<" ha viajado " <<(contC*KmH)+contC2<<" hacia Tienda "<< i+1 << endl;
-                printf("Camion %d ha viajado %d hacia Tienda %d \n",camion->id,(contC*KmH)+contC2*KmH,i+1 );
+                printf("Camion %d ha viajado %d hacia Tienda %d \n",camion->id,T[i].distancia,i+1 );
                 sleep(1);
             }
             cout<<"Camion "<<camion->id<<" ha llegado a Tienda "<< i+1 << endl;
@@ -222,7 +226,7 @@ int main() {
     cout <<"------------------------------------------------------------------- " <<endl;
     cout<<"El Camion 1 tuvo un tiempo de carga de "<< C[0].TiempoCarga<<endl;
     cout<<"El Camion 1 tuvo un tiempo en ruta de "<< C[0].TiempoRuta<<endl;
-    cout<<"El Camion 1 tuvo un tiempo total de "<< C[0].TiempoCarga+C[0].TiempoCarga<<endl;
+    cout<<"El Camion 1 tuvo un tiempo total de "<< C[0].TiempoCarga+C[0].TiempoRuta<<endl;
     cout<<"El Camion 1 tuvo una carga total de "<< C[0].cargatotal<<endl;
 
     return 0;
