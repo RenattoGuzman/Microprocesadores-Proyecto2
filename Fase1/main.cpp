@@ -23,7 +23,7 @@ struct Tienda {
     int id;
     int distancia;
     vector<int> pedidosTienda;
-    float tiempoEnDescarga;
+    bool enTiendaEsperando[4];
 };
 
 //Estructura de Camion
@@ -37,6 +37,7 @@ struct Camion {
     float TiempoCarga;
     int DistanciaRecorrida;
     float TiempoRuta;
+    float TiempoEspera;
 };
 
 //Vectores que almacenan estructuras de datos
@@ -65,7 +66,7 @@ Tienda creacionTienda(int id){
         else
             arr.push_back(num);
     }
-    T[id] = {id+1,25*(id+1),arr};
+    T[id] = {id+1,25*(id+1),arr,{false,false,false,false}};
     return T[id];
 }
 void asignarRuta(int id,Tienda t){
@@ -85,6 +86,13 @@ void *asignacionTienda(void * args){
     sleep(1);
 
     printf("Tienda %d ha asignado:\n \t %d paquetes a Camion 1. \n \t %d paquetes a Camion 2. \n \t %d paquetes a Camion 3. \n \t %d paquetes a Camion 4.  \n",id+1,T[id].pedidosTienda[0],T[id].pedidosTienda[1],T[id].pedidosTienda[2],T[id].pedidosTienda[3]);
+}
+
+void *addTiempoEspera (bool esperando[4],float tiempo){
+    for(int i = 0; i<4;i++){
+        if(esperando[i])
+            C[i].TiempoEspera+= tiempo;
+    }
 }
 
 void *CargaDescarga(void * args){
@@ -124,12 +132,12 @@ void *CargaDescarga(void * args){
                 i++;
             }
             pthread_mutex_lock(&mutexes[i]);
-            camion->TiempoRuta+= T[i].tiempoEnDescarga;
-            T[i].tiempoEnDescarga = 0;
+            T[i].enTiendaEsperando[camion->id]=false;
+
             for(int j =0;j<contD;j++){
                 camion->carga -= Tdescarga;
                 camion->TiempoCarga++;
-                T[i].tiempoEnDescarga++;
+                addTiempoEspera(T[i].enTiendaEsperando,1.0);
                 T[i].pedidosTienda[(camion->id)-1] -= Tdescarga;
                 printf("Se han descargado %d paquetes de Camion %d en Tienda %d, faltan %d. \n",Tdescarga,camion->id,i+1,T[i].pedidosTienda[(camion->id)-1]);
                 sleep(1);
@@ -137,7 +145,7 @@ void *CargaDescarga(void * args){
             if(contD2>0){
                 camion->carga -= contD2;
                 camion->TiempoCarga += ((float) contD2/Tcarga);
-                T[i].tiempoEnDescarga += ((float) contD2/Tcarga);
+                addTiempoEspera(T[i].enTiendaEsperando,((float) contD2/Tcarga));
                 T[i].pedidosTienda[(camion->id)-1] -= contD2;
                 printf("Se han descargado %d paquetes de Camion %d en Tienda %d, faltan %d. \n",contD2,camion->id,i+1,T[i].pedidosTienda[(camion->id)-1]);
                 sleep(1);
@@ -150,6 +158,13 @@ void *CargaDescarga(void * args){
             sleep(1);
     }
 }
+
+float sumTiempo (Camion c){
+    float TiempTotal = c.TiempoCarga+c.TiempoRuta+c.TiempoEspera;
+    return TiempTotal;
+}
+
+
 
 void *RutaCamion(void * args){
     Camion * camion;
@@ -174,12 +189,13 @@ void *RutaCamion(void * args){
             }
             if(contC2>0){
                 camion->DistanciaRecorrida += contC2;
-                camion->TiempoRuta+= ((float) contC/KmH);
+                camion->TiempoRuta+= ((float) contC2/KmH);
                 printf("Camion %d ha viajado %d Km hacia Tienda %d. \n",camion->id,(KmH*contC)+contC2,i+1 );
                 sleep(1);
             }
             printf("Camion %d ha llegado a Tienda %d. \n",camion->id,i+1);
             camion->enTienda = true;
+            T[i].enTiendaEsperando[camion->id] = true;
             while(camion->enTienda) {
                 sleep(1);
             }
@@ -195,11 +211,11 @@ int main() {
 
     cout << "\nIngrese la cantidad de tiendas en ruta: " << endl;
     cin >> cantTiendas;
-    cout << "\nIngrese la velocidad promedio de los camiones: " << endl;
+    cout << "\nIngrese la velocidad promedio de los camiones (km/hr): " << endl;
     cin >> KmH;
-    cout << "\nIngrese la velocidad de carga: " << endl;
+    cout << "\nIngrese la velocidad de carga (paquetes/hora): " << endl;
     cin >> Tcarga;
-    cout << "\nIngrese la velocidad de descarga: " << endl;
+    cout << "\nIngrese la velocidad de descarga (paquetes/hora): " << endl;
     cin >> Tdescarga;
 
     cout <<"------------------------------------------------------------------- " <<endl;
@@ -211,10 +227,10 @@ int main() {
         ruta0.push_back(false);
     }
 
-    C.push_back({1,"Barras de Chocolate",ruta0, true,0,0,0,0});
-    C.push_back({2,"Goma de Mascar de Tres Platos",ruta0, true,0,0,0,0});
-    C.push_back({3,"Fizzy Lifting Drink",ruta0, true,0,0,0,0});
-    C.push_back({4,"Everlasting Gobstopper",ruta0,true,0,0,0,0});
+    C.push_back({1,"Barras de Chocolate",ruta0, true,0,0,0,0,0,0});
+    C.push_back({2,"Goma de Mascar de Tres Platos",ruta0, true,0,0,0,0,0,0});
+    C.push_back({3,"Fizzy Lifting Drink",ruta0, true,0,0,0,0,0,0});
+    C.push_back({4,"Everlasting Gobstopper",ruta0,true,0,0,0,0,0,0});
 
     pthread_t hilos[cantTiendas];
 
@@ -242,14 +258,16 @@ int main() {
     for(int i =0;i<cantTiendas;i++){
         pthread_mutex_destroy(&mutexes[i]);
     }
-    cout <<"------------------------------------------------------------------- " <<endl;
-    cout<<"El Camion 1 tuvo un tiempo en ruta de "<< C[0].TiempoRuta<< " horas."<<endl;
-    cout<<"El Camion 1 tuvo un tiempo total de "<< C[0].TiempoCarga+C[0].TiempoRuta<< " horas."<<endl;
-    cout<<"El Camion 2 tuvo un tiempo en ruta de "<< C[1].TiempoRuta<< " horas."<<endl;
-    cout<<"El Camion 2 tuvo un tiempo total de "<< C[1].TiempoCarga+C[1].TiempoRuta<< " horas."<<endl;
-    cout<<"El Camion 3 tuvo un tiempo en ruta de "<< C[2].TiempoRuta<< " horas."<<endl;
-    cout<<"El Camion 3 tuvo un tiempo total de "<< C[2].TiempoCarga+C[2].TiempoRuta<< " horas."<<endl;
-    cout<<"El Camion 4 tuvo un tiempo en ruta de "<< C[3].TiempoRuta<< " horas."<<endl;
-    cout<<"El Camion 4 tuvo un tiempo total de "<< C[3].TiempoCarga+C[2].TiempoRuta<< " horas."<<endl;
+    printf("----------------------------------------------------- ");
+    printf("\n|                   | Camion 1 | Camion 2 | Camion 3 | Camion 4 |");
+    printf("\n|  Tipo de Carga | %s | %s | %s | %s | ",C[0].tipoCarga.c_str(),C[1].tipoCarga.c_str(),C[2].tipoCarga.c_str(),C[3].tipoCarga.c_str());
+    printf("\n|      CargaTotal   | %ld | %ld | %ld | %ld | ",C[0].cargatotal,C[1].cargatotal,C[2].cargatotal,C[3].cargatotal);
+    printf("\n|Distancia Recorrida| %d | %d | %d | %d | ",C[0].DistanciaRecorrida,C[1].DistanciaRecorrida,C[2].DistanciaRecorrida,C[3].DistanciaRecorrida);
+    printf("\n|  Tiempo en carga  | %f | %f | %f | %f | ",C[0].TiempoCarga,C[1].TiempoCarga,C[2].TiempoCarga,C[3].TiempoCarga);
+    printf("\n|  Tiempo en Ruta   | %f | %f | %f | %f | ",C[0].TiempoRuta,C[1].TiempoRuta,C[2].TiempoRuta,C[3].TiempoRuta);
+    printf("\n|  Tiempo en Espera | %f | %f | %f | %f | ",C[0].TiempoEspera,C[1].TiempoEspera,C[2].TiempoEspera,C[3].TiempoEspera);
+    printf("\n|   Tiempo Total    | %f | %f | %f | %f | ", sumTiempo(C[0]),sumTiempo(C[1]),sumTiempo(C[2]),sumTiempo(C[3]));
+
+
     return 0;
 }
